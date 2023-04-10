@@ -1,0 +1,146 @@
+
+#include "LedControl.h"
+
+enum State {
+  STOPPED,
+  LEFT_TIME_RUNNING,
+  RIGHT_TIME_RUNNING,
+  LEFT_FLAG,
+  RIGHT_FLAG,
+};
+
+/*
+ pin 12 is DataIn
+ pin 10 is CLK
+ pin 11 is LOAD
+ */
+LedControl lc = LedControl(12,10,11,1);
+
+constexpr int leftPin = 2;
+constexpr int rightPin = 3;
+
+volatile int leftTime = 10000;
+volatile int rightTime = 10000;
+volatile State state = State::STOPPED;
+volatile int lastButtonPressTime = 0;
+
+void setup() {
+
+  // led setup
+  lc.shutdown(0,false);
+  lc.setIntensity(0,8);
+  lc.clearDisplay(0);
+
+  // button setup
+  pinMode(leftPin, INPUT_PULLUP);
+  pinMode(rightPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(leftPin), leftButtonPress, RISING);
+  attachInterrupt(digitalPinToInterrupt(rightPin), rightButtonPress, RISING);
+}
+
+void setTime(int timeMilli, bool left) {
+  int digits[4];
+  digits[0] = timeMilli / 1000 % 10;
+  digits[1] = timeMilli / 10000 % 6;
+  digits[2] = timeMilli / 60000 % 10;
+  digits[3] = timeMilli / 600000 % 6;
+  int offset = left ? 4 : 0;
+  for (int i = 0; i < 4; i++) {
+    if (digits[i] == 0 && i == 3) {
+      lc.setRow(0, i + offset, 0);
+    } else {
+      lc.setDigit(0, i + offset, digits[i], i == 2); 
+    }
+  }
+}
+
+void flashLed(bool left) {
+  constexpr int flashTime = 250;
+  int offset = left ? 4 : 0;
+  for (int i = 0; i < 4; i++) {
+    lc.setRow(0, i + offset, 0);
+  }
+  delay(flashTime);
+  for (int i = 0; i < 4; i++) {
+    lc.setDigit(0, i + offset, 0, i == 2);
+  }
+  delay(flashTime);
+}
+
+void loop() { 
+  int now = millis();
+  switch (state) {
+    case State::LEFT_TIME_RUNNING: {
+      int actualLeftTime = leftTime - now + lastButtonPressTime;
+      setTime(actualLeftTime, true);
+      setTime(rightTime, false);
+      if (actualLeftTime <= 0) {
+        state = State::LEFT_FLAG;
+        leftTime = 0;
+      }
+      break;
+    }
+    case State::RIGHT_TIME_RUNNING: {
+      int actualRightTime = rightTime - now + lastButtonPressTime;
+      setTime(leftTime, true);
+      setTime(actualRightTime, false);
+      if (actualRightTime <= 0) {
+        state = State::RIGHT_FLAG;
+        rightTime = 0;
+      }
+      break;
+    }
+    case State::LEFT_FLAG: {
+      while (true) {
+        flashLed(true);
+      }
+    }
+    case State::RIGHT_FLAG: {
+      while (true) {
+        flashLed(false);
+      }
+    }
+    default: {
+      setTime(leftTime, true);
+      setTime(rightTime, false);
+      break;
+    }
+  }
+  delay(100);
+}
+
+void leftButtonPress() {
+  int now = millis();
+  switch (state) {
+    case State::RIGHT_FLAG:
+    case State::LEFT_FLAG:
+    case State::RIGHT_TIME_RUNNING: return;
+    case State::STOPPED: lastButtonPressTime = now;
+    default: break;
+  }
+  state = State::RIGHT_TIME_RUNNING;
+  leftTime = leftTime - now + lastButtonPressTime;
+  if (leftTime <= 0) {
+    state = State::LEFT_FLAG;
+    leftTime = 0;
+  }
+  lastButtonPressTime = now;
+}
+
+void rightButtonPress() {
+  int now = millis();
+  switch (state) {
+    case State::RIGHT_FLAG:
+    case State::LEFT_FLAG:
+    case State::LEFT_TIME_RUNNING: return;
+    case State::STOPPED: lastButtonPressTime = now;
+    default: break;
+  }
+  state = State::LEFT_TIME_RUNNING;
+  rightTime = rightTime - now + lastButtonPressTime;
+  if (rightTime <= 0) {
+    state = State::RIGHT_FLAG;
+    rightTime = 0;
+  }
+  lastButtonPressTime = now;
+}
