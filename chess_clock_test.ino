@@ -2,8 +2,8 @@
 #include "LedControl.h"
 #include <ArduinoBLE.h>
 
-BLEService echoService("00000000-0000-1000-8000-00805f9b34fb");
-BLEStringCharacteristic charac("741c12b9-e13c-4992-8a5e-fce46dec0bff", BLERead | BLENotify, 40);
+BLEService echoService("180A");
+BLEStringCharacteristic charac("2A57", BLERead | BLENotify, 40);
 String bleMessage = "";
 BLEDevice centralBleDevice;
 
