@@ -1,5 +1,11 @@
 
 #include "LedControl.h"
+#include <ArduinoBLE.h>
+
+BLEService echoService("00000000-0000-1000-8000-00805f9b34fb");
+BLEStringCharacteristic charac("741c12b9-e13c-4992-8a5e-fce46dec0bff", BLERead | BLENotify, 40);
+String bleMessage = "";
+BLEDevice centralBleDevice;
 
 enum State {
   STOPPED,
@@ -23,6 +29,7 @@ volatile int leftTime = 10000;
 volatile int rightTime = 10000;
 volatile State state = State::STOPPED;
 volatile int lastButtonPressTime = 0;
+volatile bool changed = true;
 
 void setup() {
 
@@ -36,6 +43,15 @@ void setup() {
   pinMode(rightPin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(leftPin), leftButtonPress, RISING);
   attachInterrupt(digitalPinToInterrupt(rightPin), rightButtonPress, RISING);
+
+  // bluetooth setup
+  BLE.begin();
+  BLE.setLocalName("Nano ChessClock");
+  BLE.setAdvertisedService(echoService);
+  echoService.addCharacteristic(charac);
+  BLE.addService(echoService);
+  BLE.advertise();
+  centralBleDevice = BLE.central();
 }
 
 void setTime(int timeMilli, bool left) {
@@ -67,26 +83,31 @@ void flashLed(bool left) {
   delay(flashTime);
 }
 
-void loop() { 
+
+void loop() {
+  int actualLeftTime = leftTime;
+  int actualRightTime = rightTime;  
   int now = millis();
   switch (state) {
     case State::LEFT_TIME_RUNNING: {
-      int actualLeftTime = leftTime - now + lastButtonPressTime;
+      actualLeftTime = leftTime - now + lastButtonPressTime;
       setTime(actualLeftTime, true);
       setTime(rightTime, false);
       if (actualLeftTime <= 0) {
         state = State::LEFT_FLAG;
         leftTime = 0;
+        changed = true;
       }
       break;
     }
     case State::RIGHT_TIME_RUNNING: {
-      int actualRightTime = rightTime - now + lastButtonPressTime;
+      actualRightTime = rightTime - now + lastButtonPressTime;
       setTime(leftTime, true);
       setTime(actualRightTime, false);
       if (actualRightTime <= 0) {
         state = State::RIGHT_FLAG;
         rightTime = 0;
+        changed = true;
       }
       break;
     }
@@ -107,6 +128,13 @@ void loop() {
     }
   }
   delay(100);
+  if(centralBleDevice && changed){
+      bleMessage = String("{left:") + String(actualLeftTime) + String(",right:") + String(actualRightTime) + String("}");
+      charac.writeValue(bleMessage);
+      changed = false;
+  } else {
+    centralBleDevice = BLE.central();
+  }
 }
 
 void leftButtonPress() {
@@ -125,6 +153,7 @@ void leftButtonPress() {
     leftTime = 0;
   }
   lastButtonPressTime = now;
+  changed = true;
 }
 
 void rightButtonPress() {
@@ -143,4 +172,5 @@ void rightButtonPress() {
     rightTime = 0;
   }
   lastButtonPressTime = now;
+  changed = true;
 }
