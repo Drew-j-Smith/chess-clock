@@ -5,9 +5,8 @@ function log(str) {
 }
 
 function onStartButtonClick() {
-  let serviceUuid = 0x180A;
-
-  let characteristicUuid = 0x2A57;
+  let serviceUuid = '00000000-0000-1000-8000-00805f9b34fb';
+  let characteristicUuid = '741c12b9-e13c-4992-8a5e-fce46dec0bff';
 
   log('Requesting Bluetooth Device...');
   navigator.bluetooth.requestDevice({filters: [{services: [serviceUuid]}]})

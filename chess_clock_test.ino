@@ -2,9 +2,10 @@
 #include "LedControl.h"
 #include <ArduinoBLE.h>
 
-BLEService bleService("180A");
+BLEService bleService("00000000-0000-1000-8000-00805f9b34fb");
 BLEStringCharacteristic
-    bleStringCharacteristic("2A57", BLERead | BLENotify | BLEWrite, 40);
+    bleStringCharacteristic("741c12b9-e13c-4992-8a5e-fce46dec0bff",
+                            BLERead | BLENotify | BLEWrite, 40);
 String bleMessage = "";
 BLEDevice centralBleDevice;
 
