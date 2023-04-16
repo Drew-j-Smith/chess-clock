@@ -1,12 +1,12 @@
 
-#include "LedControl.h"
 #include <ArduinoBLE.h>
+#include <LedControl.h>
 
+constexpr int bleStringLength = 80;
 BLEService bleService("00000000-0000-1000-8000-00805f9b34fb");
 BLEStringCharacteristic
     bleStringCharacteristic("741c12b9-e13c-4992-8a5e-fce46dec0bff",
-                            BLERead | BLENotify | BLEWrite, 40);
-String bleMessage = "";
+                            BLERead | BLENotify | BLEWrite, 80);
 BLEDevice centralBleDevice;
 
 enum State {
@@ -50,7 +50,6 @@ void setup() {
   BLE.setAdvertisedService(bleService);
   bleService.addCharacteristic(bleStringCharacteristic);
   BLE.addService(bleService);
-  bleStringCharacteristic.writeValue(bleMessage);
   BLE.advertise();
   centralBleDevice = BLE.central();
 }
@@ -129,8 +128,9 @@ void loop() {
   }
   delay(100);
   if (centralBleDevice && changed) {
-    bleMessage = String("{left:") + String(actualLeftTime) + String(",right:") +
-                 String(actualRightTime) + String("}");
+    String bleMessage = String("{left:") + String(actualLeftTime) +
+                        String(",right:") + String(actualRightTime) +
+                        String("}");
     bleStringCharacteristic.writeValue(bleMessage);
     changed = false;
   } else {
