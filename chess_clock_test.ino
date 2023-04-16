@@ -2,8 +2,9 @@
 #include "LedControl.h"
 #include <ArduinoBLE.h>
 
-BLEService echoService("180A");
-BLEStringCharacteristic charac("2A57", BLERead | BLENotify | BLEWrite, 40);
+BLEService bleService("180A");
+BLEStringCharacteristic
+    bleStringCharacteristic("2A57", BLERead | BLENotify | BLEWrite, 40);
 String bleMessage = "";
 BLEDevice centralBleDevice;
 
@@ -15,12 +16,10 @@ enum State {
   RIGHT_FLAG,
 };
 
-/*
- pin 12 is DataIn
- pin 10 is CLK
- pin 11 is LOAD
- */
-LedControl lc = LedControl(12, 10, 11, 1);
+constexpr int dataInPin = 12;
+constexpr int clockPin = 10;
+constexpr int loadPin = 11;
+LedControl lc = LedControl(dataInPin, clockPin, loadPin, 1);
 
 constexpr int leftPin = 2;
 constexpr int rightPin = 3;
@@ -47,10 +46,10 @@ void setup() {
   // bluetooth setup
   BLE.begin();
   BLE.setLocalName("Nano ChessClock");
-  BLE.setAdvertisedService(echoService);
-  echoService.addCharacteristic(charac);
-  BLE.addService(echoService);
-  charac.writeValue(bleMessage);
+  BLE.setAdvertisedService(bleService);
+  bleService.addCharacteristic(bleStringCharacteristic);
+  BLE.addService(bleService);
+  bleStringCharacteristic.writeValue(bleMessage);
   BLE.advertise();
   centralBleDevice = BLE.central();
 }
@@ -131,7 +130,7 @@ void loop() {
   if (centralBleDevice && changed) {
     bleMessage = String("{left:") + String(actualLeftTime) + String(",right:") +
                  String(actualRightTime) + String("}");
-    charac.writeValue(bleMessage);
+    bleStringCharacteristic.writeValue(bleMessage);
     changed = false;
   } else {
     centralBleDevice = BLE.central();
