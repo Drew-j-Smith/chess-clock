@@ -1,7 +1,7 @@
 
 #include <ArduinoBLE.h>
-#include <LedControl.h>
 #include <ArduinoJson.h>
+#include <LedControl.h>
 
 constexpr int bleStringLength = 80;
 BLEService bleService("00000000-0000-1000-8000-00805f9b34fb");
@@ -129,35 +129,56 @@ void loop() {
   }
   }
   delay(100);
-  if (centralBleDevice && changed) {
+  if (centralBleDevice && bleStringCharacteristic.written()) {
+    handleBluetoothWritten();
+  } else if (centralBleDevice && changed) {
     handleBluetoothUpdate(actualLeftTime, actualRightTime);
-    changed = false;
   } else {
     centralBleDevice = BLE.central();
   }
 }
 
 void handleBluetoothUpdate(int actualLeftTime, int actualRightTime) {
-  StaticJsonDocument<bleStringLength> doc;
+  StaticJsonDocument<2 * bleStringLength> doc;
   if (leftIsWhite) {
     doc["white"] = actualLeftTime;
     doc["black"] = actualRightTime;
     switch (state) {
-      case State::STOPPED: doc["state"] = "stopped"; break;
-      case State::LEFT_TIME_RUNNING: doc["state"] = "white_time_running"; break;
-      case State::RIGHT_TIME_RUNNING: doc["state"] = "black_time_running"; break;
-      case State::RIGHT_FLAG: doc["state"] = "white_flag"; break;
-      case State::LEFT_FLAG: doc["state"] = "black_flag"; break;
+    case State::STOPPED:
+      doc["state"] = "stopped";
+      break;
+    case State::LEFT_TIME_RUNNING:
+      doc["state"] = "white_time_running";
+      break;
+    case State::RIGHT_TIME_RUNNING:
+      doc["state"] = "black_time_running";
+      break;
+    case State::LEFT_FLAG:
+      doc["state"] = "white_flag";
+      break;
+    case State::RIGHT_FLAG:
+      doc["state"] = "black_flag";
+      break;
     }
   } else {
     doc["white"] = actualRightTime;
     doc["black"] = actualLeftTime;
     switch (state) {
-      case State::STOPPED: doc["state"] = "stopped"; break;
-      case State::LEFT_TIME_RUNNING: doc["state"] = "black_time_running"; break;
-      case State::RIGHT_TIME_RUNNING: doc["state"] = "white_time_running"; break;
-      case State::RIGHT_FLAG: doc["state"] = "black_flag"; break;
-      case State::LEFT_FLAG: doc["state"] = "white_flag"; break;
+    case State::STOPPED:
+      doc["state"] = "stopped";
+      break;
+    case State::LEFT_TIME_RUNNING:
+      doc["state"] = "black_time_running";
+      break;
+    case State::RIGHT_TIME_RUNNING:
+      doc["state"] = "white_time_running";
+      break;
+    case State::LEFT_FLAG:
+      doc["state"] = "black_flag";
+      break;
+    case State::RIGHT_FLAG:
+      doc["state"] = "white_flag";
+      break;
     }
   }
 
@@ -165,6 +186,10 @@ void handleBluetoothUpdate(int actualLeftTime, int actualRightTime) {
   serializeJson(doc, bleMessage);
   bleStringCharacteristic.writeValue(bleMessage);
   changed = false;
+}
+
+void handleBluetoothWritten() {
+  // TODO handle write
 }
 
 void leftButtonPress() {

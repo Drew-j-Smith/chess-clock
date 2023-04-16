@@ -49,9 +49,28 @@ function onStopButtonClick() {
   }
 }
 
+function onSetButtonClick() {
+  if (!myCharacteristic) {
+    return;
+  }
+  let encoder = new TextEncoder('utf-8');
+  let value = document.querySelector('#state').value;
+  log('Setting Characteristic User Description...');
+  log(encoder.encode(value).length)
+  myCharacteristic.writeValue(encoder.encode(value))
+  .then(_ => {
+    log('> Characteristic User Description changed to: ' + value);
+  })
+  .catch(error => {
+    log('Argh! ' + error);
+  });
+}
+
 function handleNotifications(event) {
   log(new TextDecoder("utf-8").decode(event.target.value.buffer));
 }
 
 document.getElementById("start").addEventListener("click", onStartButtonClick);
 document.getElementById("stop").addEventListener("click", onStopButtonClick);
+document.getElementById("set").addEventListener("click", onSetButtonClick);
+
