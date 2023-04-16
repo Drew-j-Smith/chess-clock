@@ -6,7 +6,6 @@ function log(str) {
 
 function onStartButtonClick() {
   let serviceUuid = '00000000-0000-1000-8000-00805f9b34fb';
-
   let characteristicUuid = '741c12b9-e13c-4992-8a5e-fce46dec0bff';
 
   log('Requesting Bluetooth Device...');
@@ -50,9 +49,28 @@ function onStopButtonClick() {
   }
 }
 
+function onSetButtonClick() {
+  if (!myCharacteristic) {
+    return;
+  }
+  let encoder = new TextEncoder('utf-8');
+  let value = document.querySelector('#state').value;
+  log('Setting Characteristic User Description...');
+  log(encoder.encode(value).length)
+  myCharacteristic.writeValue(encoder.encode(value))
+  .then(_ => {
+    log('> Characteristic User Description changed to: ' + value);
+  })
+  .catch(error => {
+    log('Argh! ' + error);
+  });
+}
+
 function handleNotifications(event) {
   log(new TextDecoder("utf-8").decode(event.target.value.buffer));
 }
 
 document.getElementById("start").addEventListener("click", onStartButtonClick);
 document.getElementById("stop").addEventListener("click", onStopButtonClick);
+document.getElementById("set").addEventListener("click", onSetButtonClick);
+
