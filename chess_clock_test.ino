@@ -2,8 +2,8 @@
 #include "LedControl.h"
 #include <ArduinoBLE.h>
 
-BLEService echoService("00000000-0000-1000-8000-00805f9b34fb");
-BLEStringCharacteristic charac("741c12b9-e13c-4992-8a5e-fce46dec0bff", BLERead | BLENotify, 40);
+BLEService echoService("180A");
+BLEStringCharacteristic charac("2A57", BLERead | BLENotify | BLEWrite, 40);
 String bleMessage = "";
 BLEDevice centralBleDevice;
 
@@ -20,7 +20,7 @@ enum State {
  pin 10 is CLK
  pin 11 is LOAD
  */
-LedControl lc = LedControl(12,10,11,1);
+LedControl lc = LedControl(12, 10, 11, 1);
 
 constexpr int leftPin = 2;
 constexpr int rightPin = 3;
@@ -34,8 +34,8 @@ volatile bool changed = true;
 void setup() {
 
   // led setup
-  lc.shutdown(0,false);
-  lc.setIntensity(0,8);
+  lc.shutdown(0, false);
+  lc.setIntensity(0, 8);
   lc.clearDisplay(0);
 
   // button setup
@@ -50,6 +50,7 @@ void setup() {
   BLE.setAdvertisedService(echoService);
   echoService.addCharacteristic(charac);
   BLE.addService(echoService);
+  charac.writeValue(bleMessage);
   BLE.advertise();
   centralBleDevice = BLE.central();
 }
@@ -65,7 +66,7 @@ void setTime(int timeMilli, bool left) {
     if (digits[i] == 0 && i == 3) {
       lc.setRow(0, i + offset, 0);
     } else {
-      lc.setDigit(0, i + offset, digits[i], i == 2); 
+      lc.setDigit(0, i + offset, digits[i], i == 2);
     }
   }
 }
@@ -83,55 +84,55 @@ void flashLed(bool left) {
   delay(flashTime);
 }
 
-
 void loop() {
   int actualLeftTime = leftTime;
-  int actualRightTime = rightTime;  
+  int actualRightTime = rightTime;
   int now = millis();
   switch (state) {
-    case State::LEFT_TIME_RUNNING: {
-      actualLeftTime = leftTime - now + lastButtonPressTime;
-      setTime(actualLeftTime, true);
-      setTime(rightTime, false);
-      if (actualLeftTime <= 0) {
-        state = State::LEFT_FLAG;
-        leftTime = 0;
-        changed = true;
-      }
-      break;
+  case State::LEFT_TIME_RUNNING: {
+    actualLeftTime = leftTime - now + lastButtonPressTime;
+    setTime(actualLeftTime, true);
+    setTime(rightTime, false);
+    if (actualLeftTime <= 0) {
+      state = State::LEFT_FLAG;
+      leftTime = 0;
+      changed = true;
     }
-    case State::RIGHT_TIME_RUNNING: {
-      actualRightTime = rightTime - now + lastButtonPressTime;
-      setTime(leftTime, true);
-      setTime(actualRightTime, false);
-      if (actualRightTime <= 0) {
-        state = State::RIGHT_FLAG;
-        rightTime = 0;
-        changed = true;
-      }
-      break;
+    break;
+  }
+  case State::RIGHT_TIME_RUNNING: {
+    actualRightTime = rightTime - now + lastButtonPressTime;
+    setTime(leftTime, true);
+    setTime(actualRightTime, false);
+    if (actualRightTime <= 0) {
+      state = State::RIGHT_FLAG;
+      rightTime = 0;
+      changed = true;
     }
-    case State::LEFT_FLAG: {
-      while (true) {
-        flashLed(true);
-      }
-    }
-    case State::RIGHT_FLAG: {
-      while (true) {
-        flashLed(false);
-      }
-    }
-    default: {
-      setTime(leftTime, true);
-      setTime(rightTime, false);
-      break;
+    break;
+  }
+  case State::LEFT_FLAG: {
+    while (true) {
+      flashLed(true);
     }
   }
+  case State::RIGHT_FLAG: {
+    while (true) {
+      flashLed(false);
+    }
+  }
+  default: {
+    setTime(leftTime, true);
+    setTime(rightTime, false);
+    break;
+  }
+  }
   delay(100);
-  if(centralBleDevice && changed){
-      bleMessage = String("{left:") + String(actualLeftTime) + String(",right:") + String(actualRightTime) + String("}");
-      charac.writeValue(bleMessage);
-      changed = false;
+  if (centralBleDevice && changed) {
+    bleMessage = String("{left:") + String(actualLeftTime) + String(",right:") +
+                 String(actualRightTime) + String("}");
+    charac.writeValue(bleMessage);
+    changed = false;
   } else {
     centralBleDevice = BLE.central();
   }
@@ -140,11 +141,14 @@ void loop() {
 void leftButtonPress() {
   int now = millis();
   switch (state) {
-    case State::RIGHT_FLAG:
-    case State::LEFT_FLAG:
-    case State::RIGHT_TIME_RUNNING: return;
-    case State::STOPPED: lastButtonPressTime = now;
-    default: break;
+  case State::RIGHT_FLAG:
+  case State::LEFT_FLAG:
+  case State::RIGHT_TIME_RUNNING:
+    return;
+  case State::STOPPED:
+    lastButtonPressTime = now;
+  default:
+    break;
   }
   state = State::RIGHT_TIME_RUNNING;
   leftTime = leftTime - now + lastButtonPressTime;
@@ -159,11 +163,14 @@ void leftButtonPress() {
 void rightButtonPress() {
   int now = millis();
   switch (state) {
-    case State::RIGHT_FLAG:
-    case State::LEFT_FLAG:
-    case State::LEFT_TIME_RUNNING: return;
-    case State::STOPPED: lastButtonPressTime = now;
-    default: break;
+  case State::RIGHT_FLAG:
+  case State::LEFT_FLAG:
+  case State::LEFT_TIME_RUNNING:
+    return;
+  case State::STOPPED:
+    lastButtonPressTime = now;
+  default:
+    break;
   }
   state = State::LEFT_TIME_RUNNING;
   rightTime = rightTime - now + lastButtonPressTime;
