@@ -1,4 +1,4 @@
-
+#pragma once
 #include <LedControl.h>
 
 constexpr int dataInPin = 12;
@@ -9,7 +9,6 @@ LedControl lc = LedControl(dataInPin, clockPin, loadPin, 1);
 void initializeDisplay() {
   lc.shutdown(0, false);
   lc.setIntensity(0, 8);
-  lc.clearDisplay(0);
 }
 
 void setTime(int timeMilli, bool left) {

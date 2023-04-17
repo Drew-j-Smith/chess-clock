@@ -1,8 +1,10 @@
 
+#include "display.h"
 #include "state.h"
 
 constexpr int leftButtonPin = 2;
 constexpr int rightButtonPin = 3;
+constexpr int resetButtonPin = 13;
 
 void leftButtonPress() {
   int now = millis();
@@ -54,11 +56,21 @@ void rightButtonPress() {
   changed = true;
 }
 
+void reset() {
+  initializeDisplay();
+  leftTime = 10000;
+  rightTime = 10000;
+  state = State::STOPPED;
+  changed = true;
+}
+
 void initializeButtons() {
   pinMode(leftButtonPin, INPUT_PULLUP);
   pinMode(rightButtonPin, INPUT_PULLUP);
+  pinMode(resetButtonPin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(leftButtonPin), leftButtonPress,
-                  RISING);
+                  FALLING);
   attachInterrupt(digitalPinToInterrupt(rightButtonPin), rightButtonPress,
-                  RISING);
+                  FALLING);
+  attachInterrupt(digitalPinToInterrupt(resetButtonPin), reset, FALLING);
 }
