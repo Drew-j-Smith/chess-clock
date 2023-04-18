@@ -23,15 +23,36 @@ void setTime(int timeMilli, bool left) {
   }
 }
 
+int regularLedUpdateTime = 0;
+void setTime(int leftTimeMilli, int rightTimeMilli) {
+  constexpr int minUpdateTime = 100;
+  int now = millis();
+  if (now - regularLedUpdateTime < minUpdateTime) {
+    return;
+  }
+  regularLedUpdateTime = now;
+  setTime(leftTimeMilli, true);
+  setTime(rightTimeMilli, false);
+}
+
+int flashLedUpdateTime = 0;
+int flashLedActive = false;
 void flashLed(bool left) {
   constexpr int flashTime = 250;
+  int now = millis();
+  if (now - flashLedUpdateTime < flashTime) {
+    return;
+  }
+  flashLedUpdateTime = now;
+  flashLedActive = !flashLedActive;
   int offset = left ? 4 : 0;
-  for (int i = 0; i < 4; i++) {
-    lc.setRow(0, i + offset, 0);
+  if (flashLedActive) {
+    for (int i = 0; i < 4; i++) {
+      lc.setRow(0, i + offset, 0);
+    }
+  } else {
+    for (int i = 0; i < 4; i++) {
+      lc.setDigit(0, i + offset, 0, i == 2);
+    }
   }
-  delay(flashTime);
-  for (int i = 0; i < 4; i++) {
-    lc.setDigit(0, i + offset, 0, i == 2);
-  }
-  delay(flashTime - 100);
 }

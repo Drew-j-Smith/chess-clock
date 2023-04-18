@@ -47,12 +47,11 @@ void loop() {
     changed = true;
   }
   if (state != State::LEFT_FLAG && state != State::RIGHT_FLAG) {
-    setTime(actualLeftTime, true);
-    setTime(actualRightTime, false);
+    setTime(actualLeftTime, actualRightTime);
   }
   if (changed) {
     updateBluetooth(actualLeftTime, actualRightTime);
     changed = false;
   }
-  BLE.poll(100);
+  BLE.poll();
 }
