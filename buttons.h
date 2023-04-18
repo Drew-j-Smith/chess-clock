@@ -22,7 +22,11 @@ void leftButtonPress() {
     break;
   }
   state = State::RIGHT_TIME_RUNNING;
-  leftTime = leftTime - now + lastButtonPressTime;
+  auto diff = now - lastButtonPressTime;
+  if (diff > leftDelay) {
+    leftTime += -diff + leftDelay;
+  }
+  leftTime += leftIncrement;
   if (leftTime <= 0) {
     state = State::LEFT_FLAG;
     leftTime = 0;
@@ -47,7 +51,11 @@ void rightButtonPress() {
     break;
   }
   state = State::LEFT_TIME_RUNNING;
-  rightTime = rightTime - now + lastButtonPressTime;
+  auto diff = now - lastButtonPressTime;
+  if (diff > rightDelay) {
+    rightTime += -diff + rightDelay;
+  }
+  rightTime += rightIncrement;
   if (rightTime <= 0) {
     state = State::RIGHT_FLAG;
     rightTime = 0;
