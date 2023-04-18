@@ -37,19 +37,19 @@ void intializeBluetooth() {
       });
   leftIncrementCharacteristic.setEventHandler(
       BLEWritten, [](BLEDevice, BLECharacteristic) {
-        leftTime = leftIncrementCharacteristic.value();
+        leftIncrement = leftIncrementCharacteristic.value();
       });
   rightIncrementCharacteristic.setEventHandler(
       BLEWritten, [](BLEDevice, BLECharacteristic) {
-        rightTime = rightIncrementCharacteristic.value();
+        rightIncrement = rightIncrementCharacteristic.value();
       });
   leftDelayCharacteristic.setEventHandler(
       BLEWritten, [](BLEDevice, BLECharacteristic) {
-        leftTime = leftDelayCharacteristic.value();
+        leftDelay = leftDelayCharacteristic.value();
       });
   rightDelayCharacteristic.setEventHandler(
       BLEWritten, [](BLEDevice, BLECharacteristic) {
-        rightTime = rightDelayCharacteristic.value();
+        rightDelay = rightDelayCharacteristic.value();
       });
 
   BLE.addService(bleService);
@@ -57,13 +57,8 @@ void intializeBluetooth() {
 }
 
 void updateBluetooth(int actualLeftTime, int actualRightTime) {
-  if (actualLeftTime != leftTime) {
-    leftTimeCharacteristic.writeValue(actualLeftTime);
-  }
-  if (actualRightTime != rightTime) {
-    rightTimeCharacteristic.writeValue(actualRightTime);
-  }
-
+  leftTimeCharacteristic.writeValue(actualLeftTime);
+  rightTimeCharacteristic.writeValue(actualRightTime);
   // write state last to notify
   stateCharacteristic.writeValue((int)state + (leftIsWhite ? 8 : 0));
 }
