@@ -36,12 +36,12 @@ void loop() {
     break;
   }
   }
-  if (actualLeftTime <= 0) {
+  if (actualLeftTime < 0) {
     state = State::LEFT_FLAG;
     leftTime = 0;
     changed = true;
   }
-  if (actualRightTime <= 0) {
+  if (actualRightTime < 0) {
     state = State::RIGHT_FLAG;
     rightTime = 0;
     changed = true;
