@@ -65,6 +65,8 @@ void rightButtonPress() {
 }
 
 void reset() {
+  if (digitalRead(resetButtonPin) != LOW)
+    return;
   initializeDisplay();
   leftTime = 10000;
   rightTime = 10000;
