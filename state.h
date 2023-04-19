@@ -13,6 +13,8 @@ enum State {
 
 volatile int leftTime = 10000;
 volatile int rightTime = 10000;
+volatile int leftResetTime = 10000;
+volatile int rightResetTime = 10000;
 volatile int leftIncrement = 0;
 volatile int rightIncrement = 0;
 volatile int leftDelay = 0;

@@ -67,7 +67,7 @@ void rightButtonPress(uint8_t pinIn) {
   changed = true;
 }
 
-void reset(uint8_t pinIn) {
+void resetButtonPress(uint8_t pinIn) {
   auto now = millis();
   switch (state) {
   case State::LEFT_TIME_RUNNING: {
@@ -85,21 +85,21 @@ void reset(uint8_t pinIn) {
   case State::LEFT_FLAG:
   case State::PAUSED: {
     initializeDisplay();
-    leftTime = 10000;
-    rightTime = 10000;
+    leftTime = leftResetTime;
+    rightTime = rightResetTime;
     state = State::STOPPED;
-    changed = true;
     break;
   }
   default:
     break;
   }
+  changed = true;
 }
 
 void initializeButtons() {
   leftButton.registerCallbacks(leftButtonPress, nullptr);
   rightButton.registerCallbacks(rightButtonPress, nullptr);
-  resetButton.registerCallbacks(reset, nullptr);
+  resetButton.registerCallbacks(resetButtonPress, nullptr);
   leftButton.setup(leftButtonPin);
   rightButton.setup(rightButtonPin);
   resetButton.setup(resetButtonPin);
