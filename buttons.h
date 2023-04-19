@@ -2,11 +2,17 @@
 #include "display.h"
 #include "state.h"
 
+#include <InputDebounce.h>
+
 constexpr int leftButtonPin = 2;
 constexpr int rightButtonPin = 3;
 constexpr int resetButtonPin = 13;
 
-void leftButtonPress() {
+InputDebounce leftButton;
+InputDebounce rightButton;
+InputDebounce resetButton;
+
+void leftButtonPress(uint8_t pinIn) {
   int now = millis();
   switch (state) {
   case State::RIGHT_FLAG:
@@ -35,7 +41,7 @@ void leftButtonPress() {
   changed = true;
 }
 
-void rightButtonPress() {
+void rightButtonPress(uint8_t pinIn) {
   int now = millis();
   switch (state) {
   case State::RIGHT_FLAG:
@@ -64,9 +70,7 @@ void rightButtonPress() {
   changed = true;
 }
 
-void reset() {
-  if (digitalRead(resetButtonPin) != LOW)
-    return;
+void reset(uint8_t pinIn) {
   initializeDisplay();
   leftTime = 10000;
   rightTime = 10000;
@@ -75,12 +79,10 @@ void reset() {
 }
 
 void initializeButtons() {
-  pinMode(leftButtonPin, INPUT_PULLUP);
-  pinMode(rightButtonPin, INPUT_PULLUP);
-  pinMode(resetButtonPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(leftButtonPin), leftButtonPress,
-                  FALLING);
-  attachInterrupt(digitalPinToInterrupt(rightButtonPin), rightButtonPress,
-                  FALLING);
-  attachInterrupt(digitalPinToInterrupt(resetButtonPin), reset, FALLING);
+  leftButton.registerCallbacks(leftButtonPress, nullptr);
+  rightButton.registerCallbacks(rightButtonPress, nullptr);
+  resetButton.registerCallbacks(reset, nullptr);
+  leftButton.setup(leftButtonPin);
+  rightButton.setup(rightButtonPin);
+  resetButton.setup(resetButtonPin);
 }

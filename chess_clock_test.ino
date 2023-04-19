@@ -15,6 +15,9 @@ void loop() {
   int actualLeftTime = leftTime;
   int actualRightTime = rightTime;
   int now = millis();
+  leftButton.process(now);
+  rightButton.process(now);
+  resetButton.process(now);
   switch (state) {
   case State::LEFT_TIME_RUNNING: {
     actualLeftTime = leftTime - now + lastButtonPressTime;
