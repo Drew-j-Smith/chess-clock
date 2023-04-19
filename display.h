@@ -4,14 +4,20 @@
 constexpr int dataInPin = 12;
 constexpr int clockPin = 10;
 constexpr int loadPin = 11;
-LedControl lc = LedControl(dataInPin, clockPin, loadPin, 1);
+
+LedControl &getDisplay() {
+  static LedControl lc(dataInPin, clockPin, loadPin, 1);
+  return lc;
+}
 
 void initializeDisplay() {
+  auto lc = getDisplay();
   lc.shutdown(0, false);
   lc.setIntensity(0, 8);
 }
 
 void setTime(int timeMilli, bool left) {
+  auto lc = getDisplay();
   int offset = left ? 4 : 0;
   lc.setDigit(0, 0 + offset, timeMilli / 1000 % 10, 0);
   lc.setDigit(0, 1 + offset, timeMilli / 10000 % 6, 0);
@@ -43,6 +49,7 @@ void flashLed(bool left) {
   if (now - flashLedUpdateTime < flashTime) {
     return;
   }
+  auto lc = getDisplay();
   flashLedUpdateTime = now;
   flashLedActive = !flashLedActive;
   int offset = left ? 4 : 0;

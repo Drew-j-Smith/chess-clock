@@ -6,18 +6,19 @@
 #include "display.h"
 
 void setup() {
+  delay(2000); // wait for lcd
   initializeDisplay();
   initializeButtons();
   intializeBluetooth();
 }
 
 void loop() {
-  int actualLeftTime = leftTime;
-  int actualRightTime = rightTime;
   int now = millis();
   leftButton.process(now);
   rightButton.process(now);
   resetButton.process(now);
+  int actualLeftTime = leftTime;
+  int actualRightTime = rightTime;
   switch (state) {
   case State::LEFT_TIME_RUNNING: {
     actualLeftTime = leftTime - now + lastButtonPressTime;

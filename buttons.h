@@ -20,8 +20,11 @@ void leftButtonPress(uint8_t pinIn) {
   case State::RIGHT_TIME_RUNNING:
     return;
   case State::STOPPED: {
-    lastButtonPressTime = now;
     leftIsWhite = false;
+  }
+  case State::PAUSED: {
+    lastButtonPressTime = now;
+    leftTime -= leftIncrement;
     break;
   }
   default:
@@ -33,10 +36,6 @@ void leftButtonPress(uint8_t pinIn) {
     leftTime += -diff + leftDelay;
   }
   leftTime += leftIncrement;
-  if (leftTime <= 0) {
-    state = State::LEFT_FLAG;
-    leftTime = 0;
-  }
   lastButtonPressTime = now;
   changed = true;
 }
@@ -49,8 +48,11 @@ void rightButtonPress(uint8_t pinIn) {
   case State::LEFT_TIME_RUNNING:
     return;
   case State::STOPPED: {
+    leftIsWhite = false;
+  }
+  case State::PAUSED: {
     lastButtonPressTime = now;
-    leftIsWhite = true;
+    rightTime -= leftIncrement;
     break;
   }
   default:
@@ -61,21 +63,37 @@ void rightButtonPress(uint8_t pinIn) {
   if (diff > rightDelay) {
     rightTime += -diff + rightDelay;
   }
-  rightTime += rightIncrement;
-  if (rightTime <= 0) {
-    state = State::RIGHT_FLAG;
-    rightTime = 0;
-  }
   lastButtonPressTime = now;
   changed = true;
 }
 
 void reset(uint8_t pinIn) {
-  initializeDisplay();
-  leftTime = 10000;
-  rightTime = 10000;
-  state = State::STOPPED;
-  changed = true;
+  auto now = millis();
+  switch (state) {
+  case State::LEFT_TIME_RUNNING: {
+    leftTime -= now - lastButtonPressTime;
+    state = State::PAUSED;
+    break;
+  }
+  case State::RIGHT_TIME_RUNNING: {
+    rightTime -= now - lastButtonPressTime;
+    state = State::PAUSED;
+    break;
+  }
+  case State::STOPPED:
+  case State::RIGHT_FLAG:
+  case State::LEFT_FLAG:
+  case State::PAUSED: {
+    initializeDisplay();
+    leftTime = 10000;
+    rightTime = 10000;
+    state = State::STOPPED;
+    changed = true;
+    break;
+  }
+  default:
+    break;
+  }
 }
 
 void initializeButtons() {
