@@ -70,7 +70,7 @@ function handleNotifications(event) {
   log(new TextDecoder("utf-8").decode(event.target.value.buffer));
 }
 
-document.getElementById("start").addEventListener("click", onStartButtonClick);
+document.getElementById("start").addEventListener("click", pair);
 document.getElementById("stop").addEventListener("click", onStopButtonClick);
 document.getElementById("set").addEventListener("click", onSetButtonClick);
 
