@@ -48,7 +48,7 @@ void rightButtonPress(uint8_t pinIn) {
   case State::LEFT_TIME_RUNNING:
     return;
   case State::STOPPED: {
-    leftIsWhite = false;
+    leftIsWhite = true;
   }
   case State::PAUSED: {
     lastButtonPressTime = now;
