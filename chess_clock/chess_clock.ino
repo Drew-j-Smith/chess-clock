@@ -19,14 +19,22 @@ void loop() {
   resetButton.process(now);
   int actualLeftTime = leftTime;
   int actualRightTime = rightTime;
+  auto diff = now - lastButtonPressTime;
   switch (state) {
   case State::LEFT_TIME_RUNNING: {
-    actualLeftTime = leftTime - now + lastButtonPressTime;
+    if (diff < leftDelay) {
+      actualLeftTime = leftDelay - diff;
+    } else {
+      actualLeftTime = leftTime - diff + leftDelay;
+    }
     break;
   }
   case State::RIGHT_TIME_RUNNING: {
-    actualRightTime = rightTime - now + lastButtonPressTime;
-    break;
+    if (diff < rightDelay) {
+      actualRightTime = rightDelay - diff;
+    } else {
+      actualRightTime = rightTime - diff + rightDelay;
+    }
   }
   default: {
     break;

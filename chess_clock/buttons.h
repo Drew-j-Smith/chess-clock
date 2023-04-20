@@ -34,7 +34,7 @@ void leftButtonPress(uint8_t pinIn) {
   state = State::RIGHT_TIME_RUNNING;
   auto diff = now - lastButtonPressTime;
   if (diff > leftDelay) {
-    leftTime += -diff + leftDelay;
+    leftTime = leftTime - diff + leftDelay;
   }
   leftTime += leftIncrement;
   lastButtonPressTime = now;
@@ -62,7 +62,7 @@ void rightButtonPress(uint8_t pinIn) {
   state = State::LEFT_TIME_RUNNING;
   auto diff = now - lastButtonPressTime;
   if (diff > rightDelay) {
-    rightTime += -diff + rightDelay;
+    rightTime = rightTime - diff + rightDelay;
   }
   lastButtonPressTime = now;
   changed = true;
@@ -70,14 +70,19 @@ void rightButtonPress(uint8_t pinIn) {
 
 void resetButtonPress(uint8_t pinIn) {
   auto now = millis();
+  auto diff = now - lastButtonPressTime;
   switch (state) {
   case State::LEFT_TIME_RUNNING: {
-    leftTime -= now - lastButtonPressTime;
+    if (diff > leftDelay) {
+      leftTime = leftTime - diff + leftDelay;
+    }
     state = State::PAUSED;
     break;
   }
   case State::RIGHT_TIME_RUNNING: {
-    rightTime -= now - lastButtonPressTime;
+    if (diff > rightDelay) {
+      rightTime = rightTime - diff + rightDelay;
+    }
     state = State::PAUSED;
     break;
   }
