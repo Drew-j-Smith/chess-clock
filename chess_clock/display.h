@@ -29,23 +29,10 @@ void setTime(int timeMilli, bool left) {
   }
 }
 
-int regularLedUpdateTime = 0;
-void setTime(int leftTimeMilli, int rightTimeMilli) {
-  constexpr int minUpdateTime = 100;
-  int now = millis();
-  if (now - regularLedUpdateTime < minUpdateTime) {
-    return;
-  }
-  regularLedUpdateTime = now;
-  setTime(leftTimeMilli, true);
-  setTime(rightTimeMilli, false);
-}
-
 int flashLedUpdateTime = 0;
 int flashLedActive = false;
-void flashLed(bool left) {
+void flashLed(int now, bool left) {
   constexpr int flashTime = 250;
-  int now = millis();
   if (now - flashLedUpdateTime < flashTime) {
     return;
   }
@@ -62,4 +49,23 @@ void flashLed(bool left) {
       lc.setDigit(0, i + offset, 0, i == 2);
     }
   }
+}
+
+int regularLedUpdateTime = 0;
+void setTime(int now, int leftTimeMilli, int rightTimeMilli) {
+  if (state == State::LEFT_FLAG) {
+    flashLed(now, true);
+    return;
+  }
+  if (state == State::RIGHT_FLAG) {
+    flashLed(now, false);
+    return;
+  }
+  constexpr int minUpdateTime = 100;
+  if (now - regularLedUpdateTime < minUpdateTime) {
+    return;
+  }
+  regularLedUpdateTime = now;
+  setTime(leftTimeMilli, true);
+  setTime(rightTimeMilli, false);
 }

@@ -12,6 +12,7 @@ InputDebounce leftButton;
 InputDebounce rightButton;
 InputDebounce resetButton;
 
+int lastButtonPressTime = 0;
 void leftButtonPress(uint8_t pinIn) {
   int now = millis();
   switch (state) {

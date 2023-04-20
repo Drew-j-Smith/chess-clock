@@ -28,14 +28,6 @@ void loop() {
     actualRightTime = rightTime - now + lastButtonPressTime;
     break;
   }
-  case State::LEFT_FLAG: {
-    flashLed(true);
-    break;
-  }
-  case State::RIGHT_FLAG: {
-    flashLed(false);
-    break;
-  }
   default: {
     break;
   }
@@ -52,9 +44,7 @@ void loop() {
     actualRightTime = 0;
     changed = true;
   }
-  if (state != State::LEFT_FLAG && state != State::RIGHT_FLAG) {
-    setTime(actualLeftTime, actualRightTime);
-  }
+  setTime(now, actualLeftTime, actualRightTime);
   if (changed) {
     updateBluetooth(actualLeftTime, actualRightTime);
     changed = false;

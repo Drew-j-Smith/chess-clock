@@ -11,15 +11,14 @@ enum State {
   RIGHT_FLAG,
 };
 
-volatile int leftTime = 10000;
-volatile int rightTime = 10000;
-volatile int leftResetTime = 10000;
-volatile int rightResetTime = 10000;
-volatile int leftIncrement = 0;
-volatile int rightIncrement = 0;
-volatile int leftDelay = 0;
-volatile int rightDelay = 0;
-volatile State state = State::STOPPED;
-volatile int lastButtonPressTime = 0;
-volatile bool changed = true;
-volatile bool leftIsWhite = true;
+int leftTime = 10000;
+int rightTime = 10000;
+int leftResetTime = 10000;
+int rightResetTime = 10000;
+int leftIncrement = 0;
+int rightIncrement = 0;
+int leftDelay = 0;
+int rightDelay = 0;
+State state = State::STOPPED;
+bool changed = true;
+bool leftIsWhite = true;
